@@ -12,7 +12,7 @@ This web-based application is designed for engineering education, allowing users
 
 ## How to Play
 You can play the simulation directly in your browser without installing anything. 
-(https://aayebb.github.io/2D-well-trajectory-game/)
+[Play the game here](https://aayebb.github.io/2D-well-trajectory-game/)
 
 ## Technologies Used
 * HTML5 Canvas
