@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drilling Simulator Web</title>
+    <!-- Google Fonts for Modern Typography -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Rajdhani:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <span class="pulse"></span>
+                <h1>WELL TRAJECTORY <span class="subtitle">Drilling Simulator</span></h1>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Setup Panel (Visible initially) -->
+            <section id="setup-panel" class="panel setup-panel active">
+                <h2>Configuration</h2>
+                <form id="setup-form">
+
+                    <div class="form-group">
+                        <label for="standLength">Stand Length (90 - 100 ft)</label>
+                        <input type="number" id="standLength" value="90" min="90" max="100" required>
+                    </div>
+
+                    <div class="form-group targets-group">
+                        <h3>Targets</h3>
+                        <div class="target-inputs">
+                            <div class="target-row header-row"
+                                style="margin-bottom: 5px; color: var(--text-muted); font-size: 0.85rem; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <div></div>
+                                <div>TVDss (ft)</div>
+                                <div>HD (ft)</div>
+                                <div>Tolerance (ft)</div>
+                            </div>
+                            <div class="target-row">
+                                <label>Target 1</label>
+                                <input type="number" id="t1-tvd" placeholder="TVD" value="4000" required>
+                                <input type="number" id="t1-hd" placeholder="HD" value="800" required>
+                                <input type="number" id="t1-tol" placeholder="Tolerance" value="200" required>
+                            </div>
+                            <div class="target-row">
+                                <label>Target 2</label>
+                                <input type="number" id="t2-tvd" placeholder="TVD" value="6500" required>
+                                <input type="number" id="t2-hd" placeholder="HD" value="1500" required>
+                                <input type="number" id="t2-tol" placeholder="Tolerance" value="150" required>
+                            </div>
+                            <div class="target-row">
+                                <label>Target 3</label>
+                                <input type="number" id="t3-tvd" placeholder="TVD" value="8000" required>
+                                <input type="number" id="t3-hd" placeholder="HD" value="2200" required>
+                                <input type="number" id="t3-tol" placeholder="Tolerance" value="100" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="motorSelect">Select Motor</label>
+                        <select id="motorSelect" required>
+                            <option value="1">1. 0.75 deg (Unlimited slides)</option>
+                            <option value="2">2. 1.5 deg (Max 6 consec slides, Penalty $50k)</option>
+                            <option value="3">3. 2.0 deg (Max 4 consec slides, Penalty $100k)</option>
+                            <option value="4">4. 3.0 deg (Max 3 consec slides, Penalty $200k)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary start-btn">START SIMULATION</button>
+
+                </form>
+            </section>
+
+            <!-- Game Dashboard (Hidden initially) -->
+            <section id="game-dashboard" class="panel game-dashboard">
+
+                <div class="dashboard-grid">
+
+                    <!-- Stats Column -->
+                    <div class="stats-panel">
+                        <h2>Live Telemetry</h2>
+
+                        <div class="stat-card">
+                            <span class="stat-label">Measured Depth (MD)</span>
+                            <span class="stat-value" id="val-md">0 ft</span>
+                            <span class="kop-hint" id="kop-hint">To KOP: 2000ft</span>
+                        </div>
+
+                        <div class="stat-grid-2">
+                            <div class="stat-card">
+                                <span class="stat-label">TVD</span>
+                                <span class="stat-value text-blue" id="val-tvd">-85 ft</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Horiz. Dep (HD)</span>
+                                <span class="stat-value text-blue" id="val-hd">0 ft</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Inclination</span>
+                                <span class="stat-value text-purple" id="val-inc">0.0°</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Consec Slides</span>
+                                <span class="stat-value" id="val-slides">0</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card highlight">
+                            <span class="stat-label">Total Cost</span>
+                            <span class="stat-value text-green" id="val-cost">$0</span>
+                        </div>
+
+                        <div class="stat-card alert-box" id="ac-box">
+                            <span class="stat-label">Anti-Collision Dist</span>
+                            <span class="stat-value text-amber" id="val-ac">>1000 ft</span>
+                        </div>
+
+                        <!-- Target Status -->
+                        <div class="targets-status">
+                            <h3>Targets Status</h3>
+                            <ul id="target-list">
+                                <!-- Populated dynamically -->
+                            </ul>
+                        </div>
+
+                    </div>
+
+                    <!-- Chart Column -->
+                    <div class="chart-panel">
+                        <div class="chart-container">
+                            <canvas id="wellChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Controls and Logs Column -->
+                    <div class="controls-panel">
+
+                        <div class="control-actions">
+                            <h2>Controls</h2>
+                            <button id="btn-rotate" class="btn action-btn r-btn">
+                                <span class="icon">↻</span> Rotate
+                            </button>
+                            <div class="slide-group">
+                                <button id="btn-slide-build" class="btn action-btn s-btn">
+                                    <span class="icon">↗</span> Slide Build
+                                </button>
+                                <button id="btn-slide-drop" class="btn action-btn s-btn drop">
+                                    <span class="icon">↘</span> Slide Drop
+                                </button>
+                            </div>
+                            <button id="btn-restart" class="btn btn-danger hidden"
+                                style="margin-top:20px; width:100%;">START NEW WELL</button>
+                        </div>
+
+                        <div class="logs-container">
+                            <h2>System Logs</h2>
+                            <div id="log-box" class="log-box">
+                                <div class="log-entry system">System Initialized. Engine ready.</div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer style="text-align: center; padding: 20px; font-size: 0.85rem; opacity: 0.7; margin-top: auto;">
+            &copy; 2026 Ts. Dr. Mohamad Arif Ibrahim, Department of Petroleum Engineering, Faculty of Chemical and Energy Engineering, Universiti Teknologi Malaysia.
+        </footer>
+    </div>
+
+    <!-- Main Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>
