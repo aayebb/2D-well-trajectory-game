@@ -8,7 +8,7 @@ This web-based application is designed for engineering education, allowing users
 ## Features
 * Interactive 2D visualization of well paths.
 * Educational mechanics focusing on drilling physics and trajectory calculations. 
-* Developed as an educational tool for engineering students and exhibitions (e.g., NALI 2026).
+* Developed as an educational tool for engineering students and exhibitions
 
 ## How to Play
 You can play the simulation directly in your browser without installing anything. 
